@@ -81,6 +81,14 @@ void Station::simuler(int nbIterations) {
                     
                     // L'entité fait son action
                     grille[i][j]->agir(*this); 
+
+                    // Si l'entité est un astronaute et qu'il n'a plus d'oxygène, on le supprime 
+                    if (grille[i][j]->getSymbole() == 'S') {
+                        Astronaute* astro = dynamic_cast<Astronaute*>(grille[i][j]);
+                        if (astro != nullptr && astro->estMort()) {
+                            supprimerEntite(i, j);
+                            continue; // On passe à la case suivante
+                        }
                     
                     // On compte les astronautes pour la condition d'arrêt
                     if (grille[i][j]->getSymbole() == 'S') {
@@ -145,5 +153,12 @@ void Station::supprimerEntite(int x, int y) {
     if (estDansGrille(x, y) && grille[x][y] != nullptr) {
         delete grille[x][y];
         grille[x][y] = nullptr;
+    }
+}
+
+// Ajoute une nouvelle entité sur la grille
+void Station::ajouterEntite(Entite* e) {
+    if (e != nullptr && estDansGrille(e->getX(), e->getY())) {
+        grille[e->getX()][e->getY()] = e;
     }
 }
