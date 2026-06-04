@@ -1,6 +1,6 @@
-#include "Station.h"
 #include "Astronaute.h"
 #include "ReserveOxygene.h"
+#include "Station.h"
 #include <iostream>
 #include <fstream>
 
@@ -72,39 +72,68 @@ void Station::simuler(int nbIterations) {
     for (int tour = 1; tour <= nbIterations; ++tour) {
         int nbAstronautesEnVie = 0;
 
-        // 1. On parcourt toute la grille case par case
+        // On récupère d'abord toutes les entités présentes dans la grille
+        std::vector<Entite*> entites;
         for (int i = 0; i < lignes; ++i) {
             for (int j = 0; j < colonnes; ++j) {
-                
-                // Si la case n'est pas vide
                 if (grille[i][j] != nullptr) {
-                    
-                    // L'entité fait son action
-                    grille[i][j]->agir(*this); 
-
-                    // Si l'entité est un astronaute et qu'il n'a plus d'oxygène, on le supprime 
-                    if (grille[i][j]->getSymbole() == 'S') {
-                        Astronaute* astro = dynamic_cast<Astronaute*>(grille[i][j]);
-                        if (astro != nullptr && astro->estMort()) {
-                            supprimerEntite(i, j);
-                            continue; // On passe à la case suivante
-                        }
-                    
-                    // On compte les astronautes pour la condition d'arrêt
-                    if (grille[i][j]->getSymbole() == 'S') {
-                        nbAstronautesEnVie++;
-                    }
+                    entites.push_back(grille[i][j]);
                 }
             }
         }
-        
+
+        // Chaque entité agit une fois par itération
+        for (Entite* entite : entites) {
+            if (entite == nullptr) {
+                continue;
+            }
+
+            // Vérifie si l'entité est toujours dans la grille (non supprimée ce tour-ci)
+            bool estPresent = false;
+            for (int i = 0; i < lignes; ++i) {
+                for (int j = 0; j < colonnes; ++j) {
+                    if (grille[i][j] == entite) {
+                        estPresent = true;
+                        break;
+                    }
+                }
+                if (estPresent) break;
+            }
+            if (!estPresent) {
+                continue; // L'entité a été mangée ou supprimée, on l'ignore
+            }
+
+            entite->agir(*this);
+
+            if (entite->getSymbole() == 'S') {
+                Astronaute* astro = dynamic_cast<Astronaute*>(entite);
+                if (astro != nullptr && astro->estMort()) {
+                    supprimerEntite(astro->getX(), astro->getY());
+                }
+            }
+        }
+
+        // Nettoyage des entités supprimées de la mémoire
+        for (Entite* e : aNettoyer) {
+            delete e;
+        }
+        aNettoyer.clear();
+
+        // Comptage final des astronautes vivants
+        for (int i = 0; i < lignes; ++i) {
+            for (int j = 0; j < colonnes; ++j) {
+                if (grille[i][j] != nullptr && grille[i][j]->getSymbole() == 'S') {
+                    nbAstronautesEnVie++;
+                }
+            }
+        }
+
         std::cout << "ITERATION " << tour << std::endl;
         afficherConsole();
 
-        // 2. Condition d'arrêt : si tout le monde est mort
         if (nbAstronautesEnVie == 0) {
             std::cout << "Tous les astronautes sont morts. Arret de la simulation." << std::endl;
-            break; 
+            break;
         }
     }
 }
@@ -127,7 +156,7 @@ void Station::sauvegarderFichier(const std::string& nomFichierResultat) const {
         fichier << std::endl;
     }
 }
-// Vérifie si les coordonnées ne sortent pas de la grille
+// Vérifie si sles coordonnées ne sortent pas de la grille
 bool Station::estDansGrille(int x, int y) const {
     return (x >= 0 && x < lignes && y >= 0 && y < colonnes);
 }
@@ -142,7 +171,8 @@ Entite* Station::getEntite(int x, int y) const {
 
 // Déplace une entité d'une case à une autre
 void Station::deplacerEntite(int ancienX, int ancienY, int nouvX, int nouvY) {
-    if (estDansGrille(ancienX, ancienY) && estDansGrille(nouvX, nouvY)) {
+    if (estDansGrille(ancienX, ancienY) && estDansGrille(nouvX, nouvY)
+        && grille[ancienX][ancienY] != nullptr && grille[nouvX][nouvY] == nullptr) {
         grille[nouvX][nouvY] = grille[ancienX][ancienY];
         grille[ancienX][ancienY] = nullptr;
     }
@@ -151,7 +181,7 @@ void Station::deplacerEntite(int ancienX, int ancienY, int nouvX, int nouvY) {
 // Supprime définitivement une entité de la mémoire
 void Station::supprimerEntite(int x, int y) {
     if (estDansGrille(x, y) && grille[x][y] != nullptr) {
-        delete grille[x][y];
+        aNettoyer.push_back(grille[x][y]);
         grille[x][y] = nullptr;
     }
 }
