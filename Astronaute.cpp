@@ -1,5 +1,5 @@
-#include "Astronaute.h"
 #include "Station.h"
+#include "Astronaute.h"
 #include "ReserveOxygene.h"
 #include <cstdlib> // Pour utiliser rand() (aléatoire)
 
@@ -54,5 +54,24 @@ void Astronaute::agir(Station& station) {
             y = nouvY;
         }
         // S'il y a un autre astronaute sur la case, il ne bouge pas ce tour-ci (pour faire simple)
+    }
+
+    // 4. Reproduction : si âge >= 3 et oxygène >= 6
+    if (age >= 3 && oxygene >= 6) {
+        // Cherche une case adjacente vide pour créer un nouvel astronaute
+        int dx[] = {-1, 1, 0, 0};
+        int dy[] = {0, 0, -1, 1};
+        
+        for (int i = 0; i < 4; i++) {
+            int nx = x + dx[i];
+            int ny = y + dy[i];
+            
+            if (station.estDansGrille(nx, ny) && station.getEntite(nx, ny) == nullptr) {
+                // Case vide trouvée : crée un nouvel astronaute
+                station.ajouterEntite(new Astronaute(nx, ny));
+                oxygene -= 4;  // Le parent perd 4 points d'oxygène
+                break;  // Un seul enfant par itération
+            }
+        }
     }
 }

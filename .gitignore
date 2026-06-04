@@ -1,0 +1,14 @@
+# Exécutables
+*.exe
+*.out
+*.o
+
+# Fichiers résultats
+*.result.txt
+
+# IDE
+.vscode/
+.idea/
+
+# Système
+.DS_Store

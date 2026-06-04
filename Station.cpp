@@ -105,11 +105,8 @@ void Station::simuler(int nbIterations) {
 
             entite->agir(*this);
 
-            if (entite->getSymbole() == 'S') {
-                Astronaute* astro = dynamic_cast<Astronaute*>(entite);
-                if (astro != nullptr && astro->estMort()) {
-                    supprimerEntite(astro->getX(), astro->getY());
-                }
+            if (entite->estMort()) {
+                supprimerEntite(entite->getX(), entite->getY());
             }
         }
 

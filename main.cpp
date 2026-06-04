@@ -1,3 +1,4 @@
+#include <ctime>
 #include <iostream>
 #include <string>
 #include "Station.h"
@@ -9,17 +10,19 @@ int main(int argc, char* argv[]) {
         return 1; // On arrête le programme
     }
 
+    srand(time(0)); // Initialisation de l'aléatoire (très simple)
+
     // 2. On récupère le nom du fichier (qui est stocké dans argv[1])
     std::string nomFichier = argv[1];
     
     // 3. On crée la station à partir de ce fichier
     Station maStation(nomFichier);
     
-    // 4. On simule 10 itérations (comme demandé dans le sujet)
+    // 4. On simule 10 itérations
     maStation.simuler(10); 
     
-    // 5. On sauvegarde l'état final dans un nouveau fichier texte
-    maStation.sauvegarderFichier(nomFichier + ".result.txt");
+    // 5. On sauvegarde l'état final dans un fichier (comme demandé dans le sujet)
+    maStation.sauvegarderFichier(nomFichier + "_result.txt");
 
     return 0; // Fin du programme
 }
