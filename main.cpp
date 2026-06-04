@@ -4,25 +4,25 @@
 #include "Station.h"
 
 int main(int argc, char* argv[]) {
-    // 1. Sécurité : on vérifie que tu as bien donné le fichier au lancement
+    // Vérifie si le fichier texte a bien été fourni au lancement
     if (argc < 2) {
         std::cout << "Erreur : tu as oublié de mettre le fichier en argument." << std::endl;
-        return 1; // On arrête le programme
+        return 1; // Arrête le programme en cas d'erreur
     }
 
-    srand(time(0)); // Initialisation de l'aléatoire (très simple)
+    srand(time(0)); // Initialise le générateur de nombres aléatoires
 
-    // 2. On récupère le nom du fichier (qui est stocké dans argv[1])
+    // Récupère le nom du fichier passé dans la commande
     std::string nomFichier = argv[1];
     
-    // 3. On crée la station à partir de ce fichier
+    // Crée la station en lisant les données du fichier
     Station maStation(nomFichier);
     
-    // 4. On simule 10 itérations
+    // Lance la simulation pour 10 tours
     maStation.simuler(10); 
     
-    // 5. On sauvegarde l'état final dans un fichier (comme demandé dans le sujet)
+    // Sauvegarde la grille finale dans un nouveau fichier texte
     maStation.sauvegarderFichier(nomFichier + "_result.txt");
 
-    return 0; // Fin du programme
+    return 0;
 }

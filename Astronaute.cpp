@@ -14,17 +14,17 @@ bool Astronaute::estMort() const {
 }
 
 void Astronaute::agir(Station& station) {
-    // 1. Il perd 1 point d'oxygène et vieillit
+    // À chaque tour, l'astronaute vieillit et consomme de l'oxygène
     oxygene -= 1;
     age += 1;
 
-    // S'il n'a plus d'oxygène, il meurt (la station s'occupera de le nettoyer)
+    // S'il n'a plus d'oxygène, il meurt (il sera effacé plus tard)
     if (oxygene <= 0) {
         return; 
     }
 
-    // 2. Déplacement aléatoire (Haut, Bas, Gauche, Droite)
-    int direction = rand() % 4; // Génère un nombre entre 0 et 3
+    // Choisit une direction au hasard (0: Haut, 1: Bas, 2: Gauche, 3: Droite)
+    int direction = rand() % 4;
     int nouvX = x;
     int nouvY = y;
 
@@ -33,44 +33,42 @@ void Astronaute::agir(Station& station) {
     else if (direction == 2) nouvY -= 1; // Gauche
     else if (direction == 3) nouvY += 1; // Droite
 
-    // 3. Vérifier ce qu'il se passe sur la nouvelle case
+    // Regarde ce qu'il y a sur la case d'arrivée
     if (station.estDansGrille(nouvX, nouvY)) {
         Entite* cible = station.getEntite(nouvX, nouvY);
 
         if (cible == nullptr) {
-            // Case vide : il se déplace simplement
+            // Si la case est vide, il s'y déplace
             station.deplacerEntite(x, y, nouvX, nouvY);
             x = nouvX;
             y = nouvY;
         } 
         else if (cible->getSymbole() == 'O') {
-            // Il y a une réserve d'oxygène : il la mange !
+            // S'il trouve de l'oxygène, il le consomme et prend sa place
             oxygene += 3;
-            station.supprimerEntite(nouvX, nouvY); // La réserve disparaît
+            station.supprimerEntite(nouvX, nouvY);
             
-            // Et il prend sa place
             station.deplacerEntite(x, y, nouvX, nouvY);
             x = nouvX;
             y = nouvY;
         }
-        // S'il y a un autre astronaute sur la case, il ne bouge pas ce tour-ci (pour faire simple)
+        // S'il y a déjà un autre astronaute, il ne bouge pas ce tour-ci
     }
 
-    // 4. Reproduction : si âge >= 3 et oxygène >= 6
+    // L'astronaute se reproduit s'il est assez vieux et a assez d'oxygène
     if (age >= 3 && oxygene >= 6) {
-        // Cherche une case adjacente vide pour créer un nouvel astronaute
         int dx[] = {-1, 1, 0, 0};
         int dy[] = {0, 0, -1, 1};
         
+        // Cherche une case vide autour pour placer un nouvel astronaute
         for (int i = 0; i < 4; i++) {
             int nx = x + dx[i];
             int ny = y + dy[i];
             
             if (station.estDansGrille(nx, ny) && station.getEntite(nx, ny) == nullptr) {
-                // Case vide trouvée : crée un nouvel astronaute
                 station.ajouterEntite(new Astronaute(nx, ny));
-                oxygene -= 4;  // Le parent perd 4 points d'oxygène
-                break;  // Un seul enfant par itération
+                oxygene -= 4; // L'effort lui coûte de l'oxygène
+                break; // Un seul enfant par tour
             }
         }
     }

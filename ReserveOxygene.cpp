@@ -18,20 +18,19 @@ void ReserveOxygene::consommer() {
 }
 
 void ReserveOxygene::agir(Station& station) {
-    // 1. Vérifier s'il y a un astronaute sur la case
+    // Si un astronaute est sur la case, la réserve est consommée
     Entite* occupant = station.getEntite(x, y);
     if (occupant != nullptr && occupant->getSymbole() == 'S') {
-        // Un astronaute est présent : la réserve disparaît (concentration = 0)
         concentration = 0;
-        return;  // Ne pas régénérer ni se diffuser
+        return;
     }
 
-    // 2. Régénération : si concentration > 0 et < 5, augmente de 1
+    // L'oxygène se régénère doucement tant qu'il n'est pas épuisé
     if (concentration > 0 && concentration < 5) {
         concentration += 1;
     }
 
-    // 3. Diffusion : si concentration = 5, crée une réserve sur case adjacente vide
+    // Si la réserve est pleine (5), elle s'étend sur une case vide voisine
     if (concentration == 5) {
         if (station.estDansGrille(x, y + 1) && station.getEntite(x, y + 1) == nullptr) {
             station.ajouterEntite(new ReserveOxygene(x, y + 1, 2));

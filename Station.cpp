@@ -9,7 +9,7 @@ Station::Station(const std::string& cheminFichier) : lignes(0), colonnes(0) {
     initialiserGrille(cheminFichier);
 }
 
-// Destructeur pour libérer la mémoire proprement
+// Détruit la station et vide la mémoire de toutes les cases
 Station::~Station() {
     for (int i = 0; i < lignes; ++i) {
         for (int j = 0; j < colonnes; ++j) {
@@ -18,7 +18,7 @@ Station::~Station() {
     }
 }
 
-// Lecture du fichier pour initialiser la grille
+// Lit le fichier texte pour créer la grille de départ
 void Station::initialiserGrille(const std::string& cheminFichier) {
     std::ifstream fichier(cheminFichier);
     if (!fichier) {
@@ -32,7 +32,7 @@ void Station::initialiserGrille(const std::string& cheminFichier) {
         exit(1);
     }
 
-    // On redimensionne le vecteur 2D et on le remplit de "nullptr" (cases vides)
+    // Prépare la grille avec la bonne taille, remplie de cases vides (nullptr)
     grille.resize(lignes, std::vector<Entite*>(colonnes, nullptr));
 
     for (int i = 0; i < lignes; ++i) {
@@ -40,16 +40,15 @@ void Station::initialiserGrille(const std::string& cheminFichier) {
             char symbole;
             fichier >> symbole;
             if (symbole == 'S') {
-                grille[i][j] = new Astronaute(i, j); // astronaute
+                grille[i][j] = new Astronaute(i, j);
             } else if (symbole == 'O') {
-                grille[i][j] = new ReserveOxygene(i, j); // réserve d'oxygène
+                grille[i][j] = new ReserveOxygene(i, j);
             }
-            // Si c'est '0', on laisse nullptr (module vide)
         }
     }
 }
 
-// Mode console : affichage de la grille à chaque itération
+// Affiche la grille actuelle dans le terminal
 void Station::afficherConsole() const {
     for (int i = 0; i < lignes; ++i) {
         for (int j = 0; j < colonnes; ++j) {
@@ -64,7 +63,7 @@ void Station::afficherConsole() const {
     std::cout << "----------------------" << std::endl;
 }
 
-// Boucle principale de la simulation
+// Gère l'évolution de la station sur plusieurs tours
 void Station::simuler(int nbIterations) {
     std::cout << "ETAT INITIAL" << std::endl;
     afficherConsole();
@@ -72,7 +71,7 @@ void Station::simuler(int nbIterations) {
     for (int tour = 1; tour <= nbIterations; ++tour) {
         int nbAstronautesEnVie = 0;
 
-        // On récupère d'abord toutes les entités présentes dans la grille
+        // Fait la liste de tous les éléments avant de commencer le tour
         std::vector<Entite*> entites;
         for (int i = 0; i < lignes; ++i) {
             for (int j = 0; j < colonnes; ++j) {
@@ -82,13 +81,13 @@ void Station::simuler(int nbIterations) {
             }
         }
 
-        // Chaque entité agit une fois par itération
+        // Fait agir chaque élément un par un
         for (Entite* entite : entites) {
             if (entite == nullptr) {
                 continue;
             }
 
-            // Vérifie si l'entité est toujours dans la grille (non supprimée ce tour-ci)
+            // Vérifie si l'élément n'a pas été supprimé ou mangé pendant ce tour
             bool estPresent = false;
             for (int i = 0; i < lignes; ++i) {
                 for (int j = 0; j < colonnes; ++j) {
@@ -100,7 +99,7 @@ void Station::simuler(int nbIterations) {
                 if (estPresent) break;
             }
             if (!estPresent) {
-                continue; // L'entité a été mangée ou supprimée, on l'ignore
+                continue;
             }
 
             entite->agir(*this);
@@ -110,13 +109,13 @@ void Station::simuler(int nbIterations) {
             }
         }
 
-        // Nettoyage des entités supprimées de la mémoire
+        // Supprime définitivement les éléments morts de la mémoire
         for (Entite* e : aNettoyer) {
             delete e;
         }
         aNettoyer.clear();
 
-        // Comptage final des astronautes vivants
+        // Vérifie combien d'astronautes sont encore en vie
         for (int i = 0; i < lignes; ++i) {
             for (int j = 0; j < colonnes; ++j) {
                 if (grille[i][j] != nullptr && grille[i][j]->getSymbole() == 'S') {
@@ -135,7 +134,7 @@ void Station::simuler(int nbIterations) {
     }
 }
 
-// Mode fichier : écriture de l'état final
+// Sauvegarde la grille actuelle dans un fichier texte
 void Station::sauvegarderFichier(const std::string& nomFichierResultat) const {
     std::ofstream fichier(nomFichierResultat);
     if (!fichier) {
@@ -153,12 +152,12 @@ void Station::sauvegarderFichier(const std::string& nomFichierResultat) const {
         fichier << std::endl;
     }
 }
-// Vérifie si sles coordonnées ne sortent pas de la grille
+// Vérifie si les coordonnées demandées sont bien dans la grille
 bool Station::estDansGrille(int x, int y) const {
     return (x >= 0 && x < lignes && y >= 0 && y < colonnes);
 }
 
-// Renvoie l'entité sur une case (ou nullptr si c'est vide)
+// Donne l'élément qui se trouve sur la case (ou rien si elle est vide)
 Entite* Station::getEntite(int x, int y) const {
     if (estDansGrille(x, y)) {
         return grille[x][y];
@@ -166,7 +165,7 @@ Entite* Station::getEntite(int x, int y) const {
     return nullptr;
 }
 
-// Déplace une entité d'une case à une autre
+// Déplace un élément d'une case vers une autre
 void Station::deplacerEntite(int ancienX, int ancienY, int nouvX, int nouvY) {
     if (estDansGrille(ancienX, ancienY) && estDansGrille(nouvX, nouvY)
         && grille[ancienX][ancienY] != nullptr && grille[nouvX][nouvY] == nullptr) {
@@ -175,7 +174,7 @@ void Station::deplacerEntite(int ancienX, int ancienY, int nouvX, int nouvY) {
     }
 }
 
-// Supprime définitivement une entité de la mémoire
+// Retire un élément de la grille et prépare sa destruction
 void Station::supprimerEntite(int x, int y) {
     if (estDansGrille(x, y) && grille[x][y] != nullptr) {
         aNettoyer.push_back(grille[x][y]);
@@ -183,7 +182,7 @@ void Station::supprimerEntite(int x, int y) {
     }
 }
 
-// Ajoute une nouvelle entité sur la grille
+// Place un nouvel élément dans la grille
 void Station::ajouterEntite(Entite* e) {
     if (e != nullptr && estDansGrille(e->getX(), e->getY())) {
         grille[e->getX()][e->getY()] = e;

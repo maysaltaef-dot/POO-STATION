@@ -4,7 +4,7 @@
 *.o
 
 # Fichiers résultats
-*.result.txt
+*_result.txt
 
 # IDE
 .vscode/
